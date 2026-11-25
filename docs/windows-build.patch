@@ -1,0 +1,35 @@
+diff --git a/tools/configure b/tools/configure
+index 629e294..c0ccd1b 100755
+--- a/tools/configure
++++ b/tools/configure
+@@ -137,7 +137,7 @@ app_set_lcd_size () {
+ }
+ 
+ findarmgcc() {
+-  prefixtools arm-elf-eabi-
++  prefixtools arm-none-eabi-
+   gccchoice="4.9.4"
+ }
+ 
+diff --git a/tools/functions.make b/tools/functions.make
+index c2237c9..08ef6c1 100644
+--- a/tools/functions.make
++++ b/tools/functions.make
+@@ -28,7 +28,7 @@ preprocess2file = $(shell $(CC) $(PPCFLAGS) $(3) -E -P -x c -include config.h $(
+ 		grep -v '^$(_hash_)' | grep -v "^$$" > $(2))
+ 
+ asmdefs2file = $(SILENT)$(CC) $(PPCFLAGS) $(3) -S -x c -o - -include config.h $(1) | \
+-	perl -ne 'if(/^_?AD_(\w+):$$/){$$var=$$1}else{/^\W\.(?:word|long)\W(.*)$$/ && $$var && print "\#define $$var $$1\n";$$var=0}' > $(2)
++	perl -ne 's/\r//g; if(/^_?AD_(\w+):$$/){$$var=$$1}else{/^\W\.(?:word|long)\W(.*)$$/ && $$var && print "\#define $$var $$1\n";$$var=0}' > $(2)
+ 
+ c2obj = $(addsuffix .o,$(basename $(call full_path_subst,$(ROOTDIR)/%,$(BUILDDIR)/%,$(1))))
+ 
+@@ -50,7 +50,7 @@ endif
+ 
+ # calculate dependencies for a list of source files $(2) and output them to $(1)
+ mkdepfile = $(SILENT)perl $(TOOLSDIR)/multigcc.pl $(CC) $(PPCFLAGS) $(OTHER_INC) -MG -MM -include config.h -- $(2) | \
+-	sed -e "s: lang.h: lang/lang.h:" \
++	sed -e 's|[Cc]:/|/c/|g' -e "s: lang.h: lang/lang.h:" \
+ 	-e 's:_asmdefs.o:_asmdefs.h:' \
+ 	-e "s: max_language_size.h: lang/max_language_size.h:" | \
+ 	$(TOOLSDIR)/addtargetdir.pl $(ROOTDIR) $(BUILDDIR) \
